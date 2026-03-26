@@ -1,9 +1,4 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/certifit
-    username: certifit
-    password: certifit
-    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
