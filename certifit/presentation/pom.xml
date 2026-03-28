@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>org.certifit</groupId>
-            <artifactId>infrastructure</artifactId>
+            <artifactId>db</artifactId>
             <version>${project.version}</version>
         </dependency>
 
