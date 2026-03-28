@@ -1,43 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- ===== Spring Boot Parent ===== -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- ===== Project Coordinates ===== -->
     <groupId>org.certifit</groupId>
     <artifactId>certifit</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>certifit</name>
+    <description>Spring Boot 4 Maven Multi-Module Project</description>
 
+    <!-- ===== Modules ===== -->
     <modules>
         <module>application</module>
         <module>presentation</module>
         <module>db</module>
     </modules>
 
+    <!-- ===== Global Properties ===== -->
     <properties>
         <java.version>21</java.version>
-        <spring.boot.version>4.0.0</spring.boot.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Dependency versions -->
+        <lombok.version>1.18.36</lombok.version>
+        <springdoc.version>3.0.2</springdoc.version>
+        <jjwt.version>0.12.6</jjwt.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-    </dependencies>
-
+    <!-- ===== Dependency Management (shared across all modules) ===== -->
     <dependencyManagement>
         <dependencies>
+
+            <!-- Internal modules -->
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>com.example</groupId>
+                <artifactId>application</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>db</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Springdoc OpenAPI (Swagger) — version 3.x targets Spring Boot 4 -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
             </dependency>
 
             <dependency>
@@ -47,14 +78,70 @@
             </dependency>
 
             <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-database-postgresql</artifactId>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
+
+    <!-- ===== Dependencies inherited by ALL modules ===== -->
+    <dependencies>
+
+        <!-- SLF4J API — provided transitively by spring-boot-starter-logging,
+             declared explicitly so every module can import it by name -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <!-- version managed by Spring Boot BOM -->
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Spring Boot Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ===== Build Plugins ===== -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <!-- Exclude Lombok from the fat jar -->
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

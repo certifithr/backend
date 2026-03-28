@@ -1,23 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.certifit</groupId>
         <artifactId>certifit</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>application</artifactId>
+    <packaging>jar</packaging>
+    <description>
+        Application / service layer.
+        Contains business logic, domain services, use-cases, and mappers.
+        Depends on the db module for data access.
+        No web or HTTP concerns live here.
+    </description>
 
     <dependencies>
+
+        <!-- ===== Internal: data access ===== -->
         <dependency>
             <groupId>org.certifit</groupId>
-            <artifactId>domain</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>db</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
-    </dependencies>
 
+        <!-- ===== Spring Core (no web) ===== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- BCrypt password hashing (from Spring Security, no web security config needed) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+
+        <!-- JJWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            SLF4J + Lombok are inherited from the root parent POM.
+            No need to redeclare them here.
+        -->
+
+    </dependencies>
 
 </project>

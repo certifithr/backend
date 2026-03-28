@@ -1,10 +1,12 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "trainer_profiles")
 public class TrainerProfileEntity {
