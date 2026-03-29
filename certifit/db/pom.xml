@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.certifit</groupId>
+        <artifactId>certifit</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>db</artifactId>
+    <packaging>jar</packaging>
+    <description>
+        Database / persistence layer.
+        Contains JPA entities, Spring Data repositories, and Flyway migrations.
+        No business logic or web concerns live here.
+    </description>
+
+    <dependencies>
+
+        <!-- ===== Spring Data JPA ===== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- ===== PostgreSQL JDBC driver ===== -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <!-- version managed by Spring Boot BOM -->
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ===== Flyway (PostgreSQL variant) ===== -->
+        <!--
+            Spring Boot 4 ships Flyway 11.x via its BOM.
+            Use the dedicated flyway-database-postgresql artifact
+            instead of the old flyway-core+postgresql combo.
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <!-- version managed by Spring Boot BOM -->
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <!-- version managed by Spring Boot BOM -->
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            SLF4J + Lombok are inherited from the root parent POM.
+        -->
+
+    </dependencies>
+
+</project>
