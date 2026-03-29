@@ -10,5 +10,5 @@ public class CertifitApplication {
         SpringApplication.run(CertifitApplication.class, args);
 
         System.out.println("Hello World");
-    }git
+    }
 }
