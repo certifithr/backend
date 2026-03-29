@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.certifit.application.user.UserService;
 import org.certifit.db.entity.UserEntity;
+import org.certifit.presentation.user.dto.UserResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,21 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public UserEntity getUserById(@PathVariable UUID id){
-        return userService.getUserById(id);
+    public UserResponse getUserById(@PathVariable UUID id){
+        return toResponse(userService.getUserById(id));
+    }
+
+    private UserResponse toResponse (UserEntity user){
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getAvatarUrl(),
+                user.isActive(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getRole()
+        );
     }
 }
