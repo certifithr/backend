@@ -13,6 +13,7 @@ import org.certifit.presentation.auth.dto.AuthResponse;
 import org.certifit.presentation.auth.dto.SigninRequest;
 import org.certifit.presentation.auth.dto.SignupRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
