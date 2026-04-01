@@ -1,5 +1,6 @@
 package org.certifit.presentation.exercise;
 
+import lombok.extern.slf4j.Slf4j;
 import org.certifit.application.exercise.ExerciseService;
 import org.certifit.application.exercise.dto.ExerciseFilterDto;
 import org.certifit.application.scraper.dto.ExerciseDto;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/exercises")
 public class ExerciseController {
@@ -43,9 +45,13 @@ public class ExerciseController {
             @RequestParam(required = false) String muscle,
             @PageableDefault(size = 20) Pageable pageable
     ) {
+        log.info("GET /api/exercises — filters: name={}, category={}, difficulty={}, force={}, mechanic={}, muscle={}",
+                name, category, difficulty, force, mechanic, muscle);
+
         // Validate sort fields
         for (Sort.Order order : pageable.getSort()) {
             if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                log.warn("Invalid sort field requested: {}", order.getProperty());
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -59,6 +65,7 @@ public class ExerciseController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ExerciseDto> getExerciseById(@PathVariable Integer id) {
+        log.info("GET /api/exercises/{}", id);
         return exerciseService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

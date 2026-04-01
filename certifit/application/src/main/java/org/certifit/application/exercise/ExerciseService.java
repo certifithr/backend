@@ -42,6 +42,12 @@ public class ExerciseService {
     }
 
     public Optional<ExerciseDto> findById(Integer id) {
-        return exerciseRepository.findById(id).map(exerciseMapper::fromEntity);
+        Optional<ExerciseDto> result = exerciseRepository.findById(id).map(exerciseMapper::fromEntity);
+        if (result.isPresent()) {
+            log.info("findById — id: {}, found: {}", id, result.get().name());
+        } else {
+            log.warn("findById — id: {}, not found", id);
+        }
+        return result;
     }
 }
