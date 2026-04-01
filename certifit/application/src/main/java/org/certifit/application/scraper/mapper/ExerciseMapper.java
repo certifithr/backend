@@ -2,7 +2,9 @@ package org.certifit.application.scraper.mapper;
 
 import org.certifit.application.scraper.dto.*;
 import org.certifit.application.scraper.dto.raw.*;
+import org.certifit.db.entity.ExerciseEntity;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +14,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class ExerciseMapper {
+
+    private final ObjectMapper objectMapper;
+
+    public ExerciseMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     private static final Pattern HTML_TAG = Pattern.compile("<[^>]+>");
 
@@ -84,5 +92,28 @@ public class ExerciseMapper {
     private String stripHtml(String html) {
         if (html == null || html.isBlank()) return "";
         return HTML_TAG.matcher(html).replaceAll("").trim();
+    }
+
+    public ExerciseDto fromEntity(ExerciseEntity entity) {
+        return new ExerciseDto(
+                entity.getId(),
+                entity.getName(),
+                entity.getSlug(),
+                entity.getCategory(),
+                entity.getDifficulty(),
+                entity.getForce(),
+                entity.getMechanic(),
+                entity.getMusclesPrimary(),
+                entity.getMusclesSecondary(),
+                entity.getCorrectSteps(),
+                entity.getDescription(),
+                objectMapper.convertValue(entity.getMedia(), ExerciseMediaDto.class),
+                objectMapper.convertValue(
+                        entity.getBodyMapImages(),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, BodyMapImageDto.class)
+                ),
+                entity.getVariationOf(),
+                entity.getVariations()
+        );
     }
 }
