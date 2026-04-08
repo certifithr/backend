@@ -1,6 +1,6 @@
 package org.certifit.application.auth.result;
 
-import org.certifit.db.entity.UserRole;
+import org.certifit.db.entity.enums.UserRole;
 
 import java.util.UUID;
 

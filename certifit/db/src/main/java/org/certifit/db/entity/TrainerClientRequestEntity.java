@@ -2,7 +2,8 @@ package org.certifit.db.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.certifit.db.entity.enums.UserRole;
+import org.certifit.db.entity.enums.CollaborationType;
+import org.certifit.db.entity.enums.TrainerClientRequestStatus;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -11,36 +12,34 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "users")
-public class UserEntity {
+@Table(name = "trainer_client_requests")
+public class TrainerClientRequestEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid")
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id", nullable = false)
+    private UserEntity client;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
-
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private UserEntity trainer;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "user_role")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private UserRole role;
+    @Column(name = "collaboration_type", nullable = false, columnDefinition = "collaboration_type")
+    private CollaborationType collaborationType;
 
-    @Column(name = "avatar_url", length = 500)
-    private String avatarUrl;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false, columnDefinition = "trainer_client_request_status")
+    private TrainerClientRequestStatus status = TrainerClientRequestStatus.PENDING;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    @Column(name = "message", length = 1000)
+    private String message;
 
     @Column(name = "created_at", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")

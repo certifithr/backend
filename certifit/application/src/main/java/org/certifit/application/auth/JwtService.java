@@ -3,7 +3,7 @@ package org.certifit.application.auth;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.certifit.db.entity.UserRole;
+import org.certifit.db.entity.enums.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
