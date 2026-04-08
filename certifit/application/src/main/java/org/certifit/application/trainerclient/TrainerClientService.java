@@ -1,5 +1,6 @@
 package org.certifit.application.trainerclient;
 
+import org.certifit.application.exception.*;
 import org.certifit.application.trainerclient.dto.SendTrainerRequestDto;
 import org.certifit.application.trainerclient.dto.TrainerClientDto;
 import org.certifit.application.trainerclient.dto.TrainerClientRequestDto;
@@ -40,8 +41,11 @@ public class TrainerClientService {
 
     @Transactional
     public TrainerClientRequestDto sendRequest(UUID clientId, SendTrainerRequestDto dto) {
+        log.debug("Client {} attempting to send request to trainer {}", clientId, dto.trainerId());
+
         if (requestRepository.existsByClientIdAndTrainerId(clientId, dto.trainerId())) {
-            throw new IllegalStateException("Request already exists for this trainer.");
+            log.warn("Duplicate request attempt - client: {}, trainer: {}", clientId, dto.trainerId());
+            throw new RequestAlreadyExistsException(clientId, dto.trainerId());
         }
 
         UserEntity client = findUser(clientId);
@@ -53,31 +57,43 @@ public class TrainerClientService {
         request.setCollaborationType(dto.collaborationType());
         request.setMessage(dto.message());
 
-        return toRequestDto(requestRepository.save(request));
+        TrainerClientRequestEntity savedRequest = requestRepository.save(request);
+        log.info("Client {} sent request to trainer {} with ID {}", clientId, dto.trainerId(), savedRequest.getId());
+
+        return toRequestDto(savedRequest);
     }
 
     public List<TrainerClientRequestDto> getIncomingRequests(UUID trainerId) {
-        return requestRepository
+        log.debug("Fetching incoming pending requests for trainer {}", trainerId);
+        List<TrainerClientRequestDto> requests = requestRepository
                 .findByTrainerIdAndStatus(trainerId, TrainerClientRequestStatus.PENDING)
                 .stream()
                 .map(this::toRequestDto)
                 .toList();
+        log.debug("Found {} pending requests for trainer {}", requests.size(), trainerId);
+        return requests;
     }
 
     public List<TrainerClientRequestDto> getMyRequests(UUID clientId) {
-        return requestRepository.findByClientId(clientId)
+        log.debug("Fetching all requests sent by client {}", clientId);
+        List<TrainerClientRequestDto> requests = requestRepository.findByClientId(clientId)
                 .stream()
                 .map(this::toRequestDto)
                 .toList();
+        log.debug("Found {} requests sent by client {}", requests.size(), clientId);
+        return requests;
     }
 
     @Transactional
     public TrainerClientDto acceptRequest(UUID requestId) {
+        log.debug("Attempting to accept request {}", requestId);
+
         TrainerClientRequestEntity request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Request not found."));
+                .orElseThrow(() -> new RequestNotFoundException(requestId));
 
         if (request.getStatus() != TrainerClientRequestStatus.PENDING) {
-            throw new IllegalStateException("Request is no longer pending.");
+            log.warn("Request {} is not in PENDING state, current status: {}", requestId, request.getStatus());
+            throw new InvalidRequestStateException(requestId, request.getStatus());
         }
 
         request.setStatus(TrainerClientRequestStatus.ACCEPTED);
@@ -89,50 +105,78 @@ public class TrainerClientService {
         relation.setRequest(request);
         relation.setCollaborationType(request.getCollaborationType());
 
-        log.info("Trainer {} accepted client {} request {}",
-                request.getTrainer().getId(), request.getClient().getId(), requestId);
+        TrainerClientEntity savedRelation = trainerClientRepository.save(relation);
 
-        return toDto(trainerClientRepository.save(relation));
+        log.info("Trainer {} accepted client {} request {}, created relation {}",
+                request.getTrainer().getId(), request.getClient().getId(), requestId, savedRelation.getId());
+
+        return toDto(savedRelation);
     }
 
     @Transactional
     public TrainerClientRequestDto rejectRequest(UUID requestId) {
+        log.debug("Attempting to reject request {}", requestId);
+
         TrainerClientRequestEntity request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Request not found."));
+                .orElseThrow(() -> new RequestNotFoundException(requestId));
 
         if (request.getStatus() != TrainerClientRequestStatus.PENDING) {
-            throw new IllegalStateException("Request is no longer pending.");
+            log.warn("Request {} is not in PENDING state, current status: {}", requestId, request.getStatus());
+            throw new InvalidRequestStateException(requestId, request.getStatus());
         }
 
         request.setStatus(TrainerClientRequestStatus.REJECTED);
-        return toRequestDto(requestRepository.save(request));
+        TrainerClientRequestEntity savedRequest = requestRepository.save(request);
+
+        log.info("Trainer {} rejected client {} request {}",
+                request.getTrainer().getId(), request.getClient().getId(), requestId);
+
+        return toRequestDto(savedRequest);
     }
 
     // ─── RELATIONSHIPS ────────────────────────────────────────────────────────
 
     public List<TrainerClientDto> getMyClients(UUID trainerId) {
-        return trainerClientRepository.findByTrainerId(trainerId)
+        log.debug("Fetching clients for trainer {}", trainerId);
+        List<TrainerClientDto> clients = trainerClientRepository.findByTrainerId(trainerId)
                 .stream()
                 .map(this::toDto)
                 .toList();
+        log.debug("Found {} clients for trainer {}", clients.size(), trainerId);
+        return clients;
     }
 
     public List<TrainerClientDto> getMyTrainers(UUID clientId) {
-        return trainerClientRepository.findByClientId(clientId)
+        log.debug("Fetching trainers for client {}", clientId);
+        List<TrainerClientDto> trainers = trainerClientRepository.findByClientId(clientId)
                 .stream()
                 .map(this::toDto)
                 .toList();
+        log.debug("Found {} trainers for client {}", trainers.size(), clientId);
+        return trainers;
     }
 
     @Transactional
     public TrainerClientDto updateRelation(UUID relationId, UpdateTrainerClientDto dto) {
+        log.debug("Attempting to update relation {} with dto: {}", relationId, dto);
+
         TrainerClientEntity relation = trainerClientRepository.findById(relationId)
-                .orElseThrow(() -> new IllegalArgumentException("Relation not found."));
+                .orElseThrow(() -> new RelationNotFoundException(relationId));
 
-        if (dto.status() != null) relation.setStatus(dto.status());
-        if (dto.note() != null) relation.setNote(dto.note());
+        if (dto.status() != null) {
+            log.debug("Updating relation {} status from {} to {}", relationId, relation.getStatus(), dto.status());
+            relation.setStatus(dto.status());
+        }
+        if (dto.note() != null) {
+            log.debug("Updating relation {} note", relationId);
+            relation.setNote(dto.note());
+        }
 
-        return toDto(trainerClientRepository.save(relation));
+        TrainerClientEntity savedRelation = trainerClientRepository.save(relation);
+        log.info("Updated relation {} - trainer: {}, client: {}",
+                relationId, relation.getTrainer().getId(), relation.getClient().getId());
+
+        return toDto(savedRelation);
     }
 
     // ─── MAPPERS ─────────────────────────────────────────────────────────────
@@ -171,6 +215,6 @@ public class TrainerClientService {
 
     private UserEntity findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

@@ -1,6 +1,6 @@
 package org.certifit.presentation.user.dto;
 
-import org.certifit.db.entity.UserRole;
+import org.certifit.db.entity.enums.UserRole;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
