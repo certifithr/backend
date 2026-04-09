@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.certifit.db.entity.UserRole;
+import org.certifit.db.entity.enums.UserRole;
 
 public record SignupRequest(
         @Email @NotBlank String email,

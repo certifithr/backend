@@ -13,6 +13,7 @@ import org.certifit.presentation.auth.dto.AuthResponse;
 import org.certifit.presentation.auth.dto.SigninRequest;
 import org.certifit.presentation.auth.dto.SignupRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -28,6 +29,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Register a new user")
     public AuthResponse signup(@Valid @RequestBody SignupRequest request) {
+        log.info("POST /api/auth/signup — email: {}, role: {}", request.email(), request.role());
         AuthResult result = authService.signup(new SignupCommand(
                 request.email(),
                 request.password(),
@@ -42,6 +44,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Authenticate and receive a JWT")
     public AuthResponse signin(@Valid @RequestBody SigninRequest request) {
+        log.info("POST /api/auth/signin — email: {}", request.email());
         AuthResult result = authService.signin(new SigninCommand(
                 request.email(),
                 request.password()

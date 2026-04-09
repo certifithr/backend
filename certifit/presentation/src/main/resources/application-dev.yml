@@ -4,12 +4,17 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
+  default-flat-param-object: true
 
 app:
   jwt:

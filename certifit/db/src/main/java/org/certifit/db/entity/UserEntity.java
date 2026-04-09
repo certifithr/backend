@@ -2,6 +2,7 @@ package org.certifit.db.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.certifit.db.entity.enums.UserRole;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 

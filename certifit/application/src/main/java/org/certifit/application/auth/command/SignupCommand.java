@@ -1,6 +1,6 @@
 package org.certifit.application.auth.command;
 
-import org.certifit.db.entity.UserRole;
+import org.certifit.db.entity.enums.UserRole;
 
 public record SignupCommand(
         String email,
