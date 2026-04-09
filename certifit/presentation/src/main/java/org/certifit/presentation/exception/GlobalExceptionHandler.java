@@ -14,13 +14,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({UserNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception, HttpServletRequest request){
-        ErrorResponse errorResponse = new ErrorResponse(
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildErrorResponse(exception, HttpStatus.NOT_FOUND, request));
+    }
+
+    private ErrorResponse buildErrorResponse(Exception exception, HttpStatus status, HttpServletRequest request){
+        return new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
+                status.value(),
                 exception.getMessage(),
                 request.getRequestURI()
         );
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 }
