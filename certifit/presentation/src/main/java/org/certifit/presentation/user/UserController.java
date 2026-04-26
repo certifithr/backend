@@ -35,7 +35,6 @@ public class UserController {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getAvatarUrl(),
-                user.isActive(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getRole()

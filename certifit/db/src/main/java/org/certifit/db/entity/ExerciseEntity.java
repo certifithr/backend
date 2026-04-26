@@ -1,44 +1,48 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
+@Data
+@Builder
 @Entity
 @Table(name = "exercises")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ExerciseEntity {
 
     @Id
-    @Column(name = "id")
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
+    private UUID id;
 
-    @Column(name = "name")
+    @Column
+    private Integer externalId;
+
+    @Column
     private String name;
 
-    @Column(name = "slug")
+    @Column
     private String slug;
 
-    @Column(name = "category")
+    @Column
     private String category;
 
-    @Column(name = "difficulty")
+    @Column
     private String difficulty;
 
-    @Column(name = "force")
+    @Column
     private String force;
 
-    @Column(name = "mechanic")
+    @Column
     private String mechanic;
 
-    @Column(name = "description", columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -68,4 +72,13 @@ public class ExerciseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "variations", columnDefinition = "jsonb")
     private List<Object> variations;
+
+    @Column(name = "created_at", nullable = false, updatable = false,
+            columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    private OffsetDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
 }

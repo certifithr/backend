@@ -9,6 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ public class ExerciseMapper {
 
     public ExerciseDto toDto(RawExerciseDto raw) {
         return new ExerciseDto(
+                UUID.randomUUID(),
                 raw.id(),
                 raw.name(),
                 raw.slug(),
@@ -97,6 +99,7 @@ public class ExerciseMapper {
     public ExerciseDto fromEntity(ExerciseEntity entity) {
         return new ExerciseDto(
                 entity.getId(),
+                entity.getExternalId(),
                 entity.getName(),
                 entity.getSlug(),
                 entity.getCategory(),

@@ -26,9 +26,21 @@ public class TrainerProfileEntity {
     @Column(length = 255)
     private String specialization;
 
+    @Column(length = 100)
+    private String timezone;
+
+    @Column(name = "created_at", nullable = false, updatable = false,
+            columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    private OffsetDateTime createdAt;
+
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
     @Column(name = "verified_at", columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime verifiedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
 }

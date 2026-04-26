@@ -1,16 +1,17 @@
 package org.certifit.application.trainerclient;
 
 import org.certifit.application.exception.*;
-import org.certifit.application.trainerclient.dto.SendTrainerRequestDto;
-import org.certifit.application.trainerclient.dto.TrainerClientDto;
-import org.certifit.application.trainerclient.dto.TrainerClientRequestDto;
-import org.certifit.application.trainerclient.dto.UpdateTrainerClientDto;
-import org.certifit.db.entity.TrainerClientEntity;
-import org.certifit.db.entity.TrainerClientRequestEntity;
+import org.certifit.application.trainerclient.dto.ClientProfileDto;
+import org.certifit.application.trainerclient.dto.CreateClientProfileDto;
+import org.certifit.application.trainerclient.dto.UpdateClientProfileDto;
+import org.certifit.db.entity.ClientProfileEntity;
+import org.certifit.db.entity.TrainerProfileEntity;
 import org.certifit.db.entity.UserEntity;
-import org.certifit.db.entity.enums.TrainerClientRequestStatus;
-import org.certifit.db.repository.TrainerClientRepository;
-import org.certifit.db.repository.TrainerClientRequestRepository;
+import org.certifit.db.entity.enums.ClientStatus;
+import org.certifit.db.entity.enums.GenderType;
+import org.certifit.db.entity.enums.UserRole;
+import org.certifit.db.repository.ClientProfileRepository;
+import org.certifit.db.repository.TrainerProfileRepository;
 import org.certifit.db.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,202 +20,116 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TrainerClientService {
 
     private static final Logger log = LoggerFactory.getLogger(TrainerClientService.class);
 
-    private final TrainerClientRequestRepository requestRepository;
-    private final TrainerClientRepository trainerClientRepository;
+    private final ClientProfileRepository clientProfileRepository;
+    private final TrainerProfileRepository trainerProfileRepository;
     private final UserRepository userRepository;
 
-    public TrainerClientService(TrainerClientRequestRepository requestRepository,
-                                TrainerClientRepository trainerClientRepository,
+    public TrainerClientService(ClientProfileRepository clientProfileRepository,
+                                TrainerProfileRepository trainerProfileRepository,
                                 UserRepository userRepository) {
-        this.requestRepository = requestRepository;
-        this.trainerClientRepository = trainerClientRepository;
+        this.clientProfileRepository = clientProfileRepository;
+        this.trainerProfileRepository = trainerProfileRepository;
         this.userRepository = userRepository;
     }
 
-    // ─── REQUESTS ────────────────────────────────────────────────────────────
+    // ─── CLIENT MANAGEMENT ────────────────────────────────────────────────────
 
     @Transactional
-    public TrainerClientRequestDto sendRequest(UUID clientId, SendTrainerRequestDto dto) {
-        log.debug("Client {} attempting to send request to trainer {}", clientId, dto.trainerId());
+    public ClientProfileDto addClient(UUID trainerId, CreateClientProfileDto dto) {
+        log.debug("Trainer {} adding client {}", trainerId, dto.userId());
 
-        if (requestRepository.existsByClientIdAndTrainerId(clientId, dto.trainerId())) {
-            log.warn("Duplicate request attempt - client: {}, trainer: {}", clientId, dto.trainerId());
-            throw new RequestAlreadyExistsException(clientId, dto.trainerId());
+        UserEntity trainer = userRepository.findById(trainerId)
+                .orElseThrow(() -> new UserNotFoundException(trainerId));
+
+        if (!trainer.getRole().equals(UserRole.TRAINER)) {
+            throw new InvalidRoleException(trainerId.toString(), "TRAINER");
         }
 
-        UserEntity client = findUser(clientId);
-        UserEntity trainer = findUser(dto.trainerId());
+        UserEntity clientUser = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
 
-        TrainerClientRequestEntity request = new TrainerClientRequestEntity();
-        request.setClient(client);
-        request.setTrainer(trainer);
-        request.setCollaborationType(dto.collaborationType());
-        request.setMessage(dto.message());
-
-        TrainerClientRequestEntity savedRequest = requestRepository.save(request);
-        log.info("Client {} sent request to trainer {} with ID {}", clientId, dto.trainerId(), savedRequest.getId());
-
-        return toRequestDto(savedRequest);
-    }
-
-    public List<TrainerClientRequestDto> getIncomingRequests(UUID trainerId) {
-        log.debug("Fetching incoming pending requests for trainer {}", trainerId);
-        List<TrainerClientRequestDto> requests = requestRepository
-                .findByTrainerIdAndStatus(trainerId, TrainerClientRequestStatus.PENDING)
-                .stream()
-                .map(this::toRequestDto)
-                .toList();
-        log.debug("Found {} pending requests for trainer {}", requests.size(), trainerId);
-        return requests;
-    }
-
-    public List<TrainerClientRequestDto> getMyRequests(UUID clientId) {
-        log.debug("Fetching all requests sent by client {}", clientId);
-        List<TrainerClientRequestDto> requests = requestRepository.findByClientId(clientId)
-                .stream()
-                .map(this::toRequestDto)
-                .toList();
-        log.debug("Found {} requests sent by client {}", requests.size(), clientId);
-        return requests;
-    }
-
-    @Transactional
-    public TrainerClientDto acceptRequest(UUID requestId) {
-        log.debug("Attempting to accept request {}", requestId);
-
-        TrainerClientRequestEntity request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new RequestNotFoundException(requestId));
-
-        if (request.getStatus() != TrainerClientRequestStatus.PENDING) {
-            log.warn("Request {} is not in PENDING state, current status: {}", requestId, request.getStatus());
-            throw new InvalidRequestStateException(requestId, request.getStatus());
+        if (!clientUser.getRole().equals(UserRole.CLIENT)) {
+            throw new InvalidRoleException(dto.userId().toString(), "CLIENT");
         }
 
-        request.setStatus(TrainerClientRequestStatus.ACCEPTED);
-        requestRepository.save(request);
+        TrainerProfileEntity trainerProfile = trainerProfileRepository.findByUserId(trainerId)
+                .orElseThrow(() -> new TrainerProfileNotFoundException(trainerId));
 
-        TrainerClientEntity relation = new TrainerClientEntity();
-        relation.setTrainer(request.getTrainer());
-        relation.setClient(request.getClient());
-        relation.setRequest(request);
-        relation.setCollaborationType(request.getCollaborationType());
+        if (clientProfileRepository.findByUserId(dto.userId()).isPresent()) {
+            throw new ClientAlreadyAssignedException(dto.userId());
+        }
 
-        TrainerClientEntity savedRelation = trainerClientRepository.save(relation);
+        ClientProfileEntity clientProfile = new ClientProfileEntity();
+        clientProfile.setUser(clientUser);
+        clientProfile.setTrainer(trainerProfile);
+        clientProfile.setDateOfBirth(dto.dateOfBirth());
+        clientProfile.setGender(GenderType.valueOf(dto.gender().toUpperCase()));
+        clientProfile.setHeightCm(dto.heightCm());
+        clientProfile.setGoal(dto.goal());
+        clientProfile.setStatus(ClientStatus.ACTIVE);
 
-        log.info("Trainer {} accepted client {} request {}, created relation {}",
-                request.getTrainer().getId(), request.getClient().getId(), requestId, savedRelation.getId());
+        ClientProfileEntity saved = clientProfileRepository.save(clientProfile);
+        log.info("Client {} added to trainer {}", dto.userId(), trainerId);
 
-        return toDto(savedRelation);
+        return toDto(saved);
+    }
+
+    public List<ClientProfileDto> getClientsByTrainer(UUID trainerId) {
+        log.debug("Getting clients for trainer {}", trainerId);
+
+        List<ClientProfileEntity> clients = clientProfileRepository.findByTrainerId(trainerId);
+        return clients.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    public ClientProfileDto getClientProfile(UUID clientId) {
+        log.debug("Getting client profile for {}", clientId);
+
+        ClientProfileEntity client = clientProfileRepository.findByUserId(clientId)
+                .orElseThrow(() -> new ClientProfileNotFoundException(clientId));
+
+        return toDto(client);
     }
 
     @Transactional
-    public TrainerClientRequestDto rejectRequest(UUID requestId) {
-        log.debug("Attempting to reject request {}", requestId);
+    public ClientProfileDto updateClientProfile(UUID clientId, UpdateClientProfileDto dto) {
+        log.debug("Updating client profile for {}", clientId);
 
-        TrainerClientRequestEntity request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new RequestNotFoundException(requestId));
+        ClientProfileEntity client = clientProfileRepository.findByUserId(clientId)
+                .orElseThrow(() -> new ClientProfileNotFoundException(clientId));
 
-        if (request.getStatus() != TrainerClientRequestStatus.PENDING) {
-            log.warn("Request {} is not in PENDING state, current status: {}", requestId, request.getStatus());
-            throw new InvalidRequestStateException(requestId, request.getStatus());
-        }
+        // Update fields
+        if (dto.dateOfBirth() != null) client.setDateOfBirth(dto.dateOfBirth());
+        if (dto.gender() != null) client.setGender(GenderType.valueOf(dto.gender().toUpperCase()));
+        if (dto.heightCm() != null) client.setHeightCm(dto.heightCm());
+        if (dto.goal() != null) client.setGoal(dto.goal());
+        if (dto.status() != null) client.setStatus(ClientStatus.valueOf(dto.status().toUpperCase()));
 
-        request.setStatus(TrainerClientRequestStatus.REJECTED);
-        TrainerClientRequestEntity savedRequest = requestRepository.save(request);
+        ClientProfileEntity saved = clientProfileRepository.save(client);
+        log.info("Client profile updated for {}", clientId);
 
-        log.info("Trainer {} rejected client {} request {}",
-                request.getTrainer().getId(), request.getClient().getId(), requestId);
-
-        return toRequestDto(savedRequest);
+        return toDto(saved);
     }
 
-    // ─── RELATIONSHIPS ────────────────────────────────────────────────────────
-
-    public List<TrainerClientDto> getMyClients(UUID trainerId) {
-        log.debug("Fetching clients for trainer {}", trainerId);
-        List<TrainerClientDto> clients = trainerClientRepository.findByTrainerId(trainerId)
-                .stream()
-                .map(this::toDto)
-                .toList();
-        log.debug("Found {} clients for trainer {}", clients.size(), trainerId);
-        return clients;
-    }
-
-    public List<TrainerClientDto> getMyTrainers(UUID clientId) {
-        log.debug("Fetching trainers for client {}", clientId);
-        List<TrainerClientDto> trainers = trainerClientRepository.findByClientId(clientId)
-                .stream()
-                .map(this::toDto)
-                .toList();
-        log.debug("Found {} trainers for client {}", trainers.size(), clientId);
-        return trainers;
-    }
-
-    @Transactional
-    public TrainerClientDto updateRelation(UUID relationId, UpdateTrainerClientDto dto) {
-        log.debug("Attempting to update relation {} with dto: {}", relationId, dto);
-
-        TrainerClientEntity relation = trainerClientRepository.findById(relationId)
-                .orElseThrow(() -> new RelationNotFoundException(relationId));
-
-        if (dto.status() != null) {
-            log.debug("Updating relation {} status from {} to {}", relationId, relation.getStatus(), dto.status());
-            relation.setStatus(dto.status());
-        }
-        if (dto.note() != null) {
-            log.debug("Updating relation {} note", relationId);
-            relation.setNote(dto.note());
-        }
-
-        TrainerClientEntity savedRelation = trainerClientRepository.save(relation);
-        log.info("Updated relation {} - trainer: {}, client: {}",
-                relationId, relation.getTrainer().getId(), relation.getClient().getId());
-
-        return toDto(savedRelation);
-    }
-
-    // ─── MAPPERS ─────────────────────────────────────────────────────────────
-
-    private TrainerClientRequestDto toRequestDto(TrainerClientRequestEntity e) {
-        return new TrainerClientRequestDto(
-                e.getId(),
-                e.getClient().getId(),
-                e.getClient().getFirstName(),
-                e.getClient().getLastName(),
-                e.getTrainer().getId(),
-                e.getTrainer().getFirstName(),
-                e.getTrainer().getLastName(),
-                e.getCollaborationType(),
-                e.getStatus(),
-                e.getMessage(),
-                e.getCreatedAt()
+    private ClientProfileDto toDto(ClientProfileEntity entity) {
+        return new ClientProfileDto(
+                entity.getId(),
+                entity.getUser().getId(),
+                entity.getTrainer().getId(),
+                entity.getDateOfBirth(),
+                entity.getGender() != null ? entity.getGender().name() : null,
+                entity.getHeightCm(),
+                entity.getGoal(),
+                entity.getStatus() != null ? entity.getStatus().name() : null,
+                entity.getOnboardedAt(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-    }
-
-    private TrainerClientDto toDto(TrainerClientEntity e) {
-        return new TrainerClientDto(
-                e.getId(),
-                e.getTrainer().getId(),
-                e.getTrainer().getFirstName(),
-                e.getTrainer().getLastName(),
-                e.getClient().getId(),
-                e.getClient().getFirstName(),
-                e.getClient().getLastName(),
-                e.getCollaborationType(),
-                e.getStatus(),
-                e.getNote(),
-                e.getCreatedAt()
-        );
-    }
-
-    private UserEntity findUser(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

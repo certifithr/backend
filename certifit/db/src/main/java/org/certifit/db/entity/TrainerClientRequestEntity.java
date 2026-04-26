@@ -29,34 +29,24 @@ public class TrainerClientRequestEntity {
     private UserEntity trainer;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "collaboration_type")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "collaboration_type", nullable = false, columnDefinition = "collaboration_type")
     private CollaborationType collaborationType;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "trainer_client_request_status", nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status", nullable = false, columnDefinition = "trainer_client_request_status")
     private TrainerClientRequestStatus status = TrainerClientRequestStatus.PENDING;
 
-    @Column(name = "message", length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @Column(name = "created_at", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false,
-            columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
-    private OffsetDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
-        updatedAt = OffsetDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = OffsetDateTime.now();
     }
 }

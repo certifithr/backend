@@ -19,28 +19,34 @@ public class UserEntity {
     @Column(columnDefinition = "uuid")
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
-
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
-
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "user_role")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserRole role;
 
-    @Column(name = "avatar_url", length = 500)
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "deleted_at", columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime deletedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")

@@ -110,6 +110,7 @@ public class ExerciseScraperService {
     private ExerciseEntity toEntity(ExerciseDto dto) {
         return ExerciseEntity.builder()
                 .id(dto.id())
+                .externalId(dto.externalId())
                 .name(dto.name())
                 .slug(dto.slug())
                 .category(dto.category())

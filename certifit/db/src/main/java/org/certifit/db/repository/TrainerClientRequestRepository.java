@@ -11,9 +11,9 @@ import java.util.UUID;
 @Repository
 public interface TrainerClientRequestRepository extends JpaRepository<TrainerClientRequestEntity, UUID> {
 
+    boolean existsByClientIdAndTrainerId(UUID clientId, UUID trainerId);
+
     List<TrainerClientRequestEntity> findByTrainerIdAndStatus(UUID trainerId, TrainerClientRequestStatus status);
 
     List<TrainerClientRequestEntity> findByClientId(UUID clientId);
-
-    boolean existsByClientIdAndTrainerId(UUID clientId, UUID trainerId);
 }

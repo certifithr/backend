@@ -3,9 +3,11 @@ package org.certifit.application.scraper.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.UUID;
 
 public record ExerciseDto(
-        @JsonProperty("id") Integer id,
+        @JsonProperty("id") UUID id,
+        @JsonProperty("external_id") Integer externalId,
         @JsonProperty("name") String name,
         @JsonProperty("slug") String slug,
         @JsonProperty("category") String category,

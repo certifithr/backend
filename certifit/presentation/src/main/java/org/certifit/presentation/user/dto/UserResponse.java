@@ -11,7 +11,6 @@ public record UserResponse(
         String firstName,
         String lastName,
         String avatarUrl,
-        boolean isActive,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
         UserRole role

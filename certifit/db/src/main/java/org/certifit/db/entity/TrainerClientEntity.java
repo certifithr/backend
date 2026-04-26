@@ -2,8 +2,8 @@ package org.certifit.db.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.certifit.db.entity.enums.ClientStatus;
 import org.certifit.db.entity.enums.CollaborationType;
-import org.certifit.db.entity.enums.TrainerClientStatus;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -12,10 +12,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(
-        name = "trainer_clients",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"trainer_id", "client_id"})
-)
+@Table(name = "trainer_clients")
 public class TrainerClientEntity {
 
     @Id
@@ -36,34 +33,24 @@ public class TrainerClientEntity {
     private TrainerClientRequestEntity request;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "collaboration_type")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "collaboration_type", nullable = false, columnDefinition = "collaboration_type")
     private CollaborationType collaborationType;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "client_status", nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status", nullable = false, columnDefinition = "trainer_client_status")
-    private TrainerClientStatus status = TrainerClientStatus.ACTIVE;
+    private ClientStatus status = ClientStatus.ACTIVE;
 
-    @Column(name = "note", length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     @Column(name = "created_at", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false,
-            columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
-    private OffsetDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
-        updatedAt = OffsetDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = OffsetDateTime.now();
     }
 }

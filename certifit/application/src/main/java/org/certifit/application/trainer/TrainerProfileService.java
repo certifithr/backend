@@ -98,7 +98,7 @@ public class TrainerProfileService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        if (user.getRole() != UserRole.trainer) {
+        if (user.getRole() != UserRole.TRAINER) {
             throw new IllegalArgumentException("User is not a trainer: " + userId);
         }
     }
