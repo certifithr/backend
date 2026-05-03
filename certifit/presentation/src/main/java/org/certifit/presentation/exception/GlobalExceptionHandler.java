@@ -1,5 +1,6 @@
 package org.certifit.presentation.exception;
 
+import com.sun.jdi.request.InvalidRequestStateException;
 import org.certifit.application.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

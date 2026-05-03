@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface WorkoutPlanRepository extends JpaRepository<WorkoutPlanEntity, UUID> {
 
     List<WorkoutPlanEntity> findByTrainerId(UUID trainerId);
+
+    List<WorkoutPlanEntity> findByTrainerIdAndDeletedAtIsNull(UUID trainerId);
 }

@@ -1,7 +1,10 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -10,6 +13,9 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "nutrition_logs")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NutritionLogEntity {
 
     @Id

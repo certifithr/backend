@@ -1,7 +1,10 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.certifit.db.entity.enums.ClientStatus;
 import org.certifit.db.entity.enums.GenderType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -14,6 +17,9 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "client_profiles")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientProfileEntity {
 
     @Id

@@ -46,12 +46,12 @@
 
             <!-- Internal modules -->
             <dependency>
-                <groupId>com.example</groupId>
+                <groupId>org.certifit</groupId>
                 <artifactId>application</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.example</groupId>
+                <groupId>org.certifit</groupId>
                 <artifactId>db</artifactId>
                 <version>${project.version}</version>
             </dependency>

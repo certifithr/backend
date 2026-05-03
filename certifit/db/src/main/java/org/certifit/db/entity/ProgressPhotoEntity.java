@@ -1,7 +1,10 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.certifit.db.entity.enums.PhotoAngle;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -12,6 +15,9 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "progress_photos")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProgressPhotoEntity {
 
     @Id

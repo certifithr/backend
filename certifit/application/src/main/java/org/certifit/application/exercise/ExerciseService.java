@@ -13,8 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ExerciseService {
@@ -49,5 +51,12 @@ public class ExerciseService {
             log.warn("findById — id: {}, not found", id);
         }
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public ExerciseEntity getExerciseById(UUID exerciseId) {
+        log.debug("Getting exercise by id: {}", exerciseId);
+        return exerciseRepository.findById(exerciseId)
+                .orElseThrow(() -> new IllegalArgumentException("Exercise not found: " + exerciseId));
     }
 }

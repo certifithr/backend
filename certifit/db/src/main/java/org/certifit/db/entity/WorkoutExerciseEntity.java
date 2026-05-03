@@ -1,13 +1,19 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Data
 @Entity
 @Table(name = "workout_exercises")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class WorkoutExerciseEntity {
 
     @Id

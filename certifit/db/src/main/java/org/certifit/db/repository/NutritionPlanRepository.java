@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface NutritionPlanRepository extends JpaRepository<NutritionPlanEntity, UUID> {
 
     List<NutritionPlanEntity> findByTrainerId(UUID trainerId);
+
+    List<NutritionPlanEntity> findByTrainerIdAndDeletedAtIsNull(UUID trainerId);
 }

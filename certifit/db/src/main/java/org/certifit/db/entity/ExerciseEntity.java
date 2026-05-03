@@ -1,8 +1,10 @@
 package org.certifit.db.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -11,9 +13,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
 @Entity
 @Table(name = "exercises")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExerciseEntity {
 
     @Id

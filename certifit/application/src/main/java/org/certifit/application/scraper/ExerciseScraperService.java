@@ -7,18 +7,15 @@ import org.certifit.db.entity.ExerciseEntity;
 import org.certifit.db.repository.ExerciseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -40,6 +37,7 @@ public class ExerciseScraperService {
         this.exerciseRepository = exerciseRepository;
     }
 
+    @Transactional
     public int loadFromZip(MultipartFile file) {
         int totalSaved = 0;
 
@@ -53,19 +51,16 @@ public class ExerciseScraperService {
 
                 log.info("Processing zip entry: {}", entry.getName());
 
-                // ZipInputStream can't be passed directly — read entry bytes first
-                byte[] bytes = zip.readAllBytes();
-
-                MuscleWikiPageDto page = objectMapper.readValue(bytes, MuscleWikiPageDto.class);
+                MuscleWikiPageDto page = objectMapper.readValue(zip.readAllBytes(), MuscleWikiPageDto.class);
 
                 List<ExerciseEntity> entities = page.results().stream()
                         .map(mapper::toDto)
                         .map(this::toEntity)
                         .collect(Collectors.toList());
 
-                exerciseRepository.saveAll(entities);
-                totalSaved += entities.size();
-                log.info("Saved {} exercises from {}", entities.size(), entry.getName());
+                if (!entities.isEmpty()) {
+                    totalSaved += saveNewExercises(entities);
+                }
 
                 zip.closeEntry();
             }
@@ -78,38 +73,26 @@ public class ExerciseScraperService {
         return totalSaved;
     }
 
-    public List<ExerciseDto> loadFromFile(MultipartFile file) {
-        log.info("Parsing uploaded file: {}, size: {} bytes", file.getOriginalFilename(), file.getSize());
+    private int saveNewExercises(List<ExerciseEntity> entities) {
+        // Fetch all existing externalIds in one query instead of N queries
+        Set<Integer> existingExternalIds = exerciseRepository.findAllExternalIds();
 
-        MuscleWikiPageDto page;
-        try {
-            page = objectMapper.readValue(file.getInputStream(), MuscleWikiPageDto.class);
-        } catch (IOException e) {
-            log.error("Failed to parse uploaded file", e);
-            throw new RuntimeException("Could not parse exercise JSON", e);
+        List<ExerciseEntity> newEntities = entities.stream()
+                .filter(e -> e.getExternalId() == null || !existingExternalIds.contains(e.getExternalId()))
+                .collect(Collectors.toList());
+
+        if (newEntities.isEmpty()) {
+            log.info("All exercises already exist, skipping");
+            return 0;
         }
 
-        return loadFromPage(page);
-    }
-
-    public List<ExerciseDto> loadFromPage(MuscleWikiPageDto page){
-        List<ExerciseDto> dtos = page.results().stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toList());
-
-        List<ExerciseEntity> entities = dtos.stream()
-                .map(this::toEntity)
-                .collect(Collectors.toList());
-
-        exerciseRepository.saveAll(entities);
-        log.info("Saved {} exercises to database", entities.size());
-
-        return dtos;
+        exerciseRepository.saveAll(newEntities);
+        log.info("Saved {} new exercises", newEntities.size());
+        return newEntities.size();
     }
 
     private ExerciseEntity toEntity(ExerciseDto dto) {
         return ExerciseEntity.builder()
-                .id(dto.id())
                 .externalId(dto.externalId())
                 .name(dto.name())
                 .slug(dto.slug())
