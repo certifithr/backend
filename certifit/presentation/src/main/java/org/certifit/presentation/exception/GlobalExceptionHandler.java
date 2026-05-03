@@ -48,6 +48,30 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
 
+    @ExceptionHandler(InvitationNotFoundException.class)
+    public ResponseEntity<Object> handleInvitationNotFoundException(InvitationNotFoundException exception) {
+        log.warn("Invitation not found: {}", exception.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvitationAlreadyProcessedException.class)
+    public ResponseEntity<Object> handleInvitationAlreadyProcessedException(InvitationAlreadyProcessedException exception) {
+        log.warn("Invitation already processed: {}", exception.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(PendingInvitationAlreadyExistsException.class)
+    public ResponseEntity<Object> handlePendingInvitationAlreadyExistsException(PendingInvitationAlreadyExistsException exception) {
+        log.warn("Duplicate invitation: {}", exception.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedInvitationAccessException.class)
+    public ResponseEntity<Object> handleUnauthorizedInvitationAccessException(UnauthorizedInvitationAccessException exception) {
+        log.warn("Unauthorized invitation access: {}", exception.getMessage());
+        return buildErrorResponse(HttpStatus.FORBIDDEN, exception.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException exception) {
         log.warn("Invalid argument: {}", exception.getMessage());

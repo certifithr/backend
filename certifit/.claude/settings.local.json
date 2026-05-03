@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Fran\\\\Workspace\\\\Projects\\\\CertiFit\\\\backend\\\\certifit\" -Recurse -Force)",
+      "Bash(Select-Object -First 100)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Fran\\\\Workspace\\\\Projects\\\\CertiFit\\\\backend\\\\certifit\" -Recurse -Directory | Select-Object -First 20 | ForEach-Object { $_.FullName })",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Fran\\\\Workspace\\\\Projects\\\\CertiFit\\\\backend\\\\certifit\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path . -Force)",
+      "Bash(Select-Object Name, Mode)"
+    ]
+  }
+}

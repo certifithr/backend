@@ -29,7 +29,8 @@ public class OpenApiConfig {
     public OperationCustomizer pageableOperationCustomizer() {
         return (operation, handlerMethod) -> {
             if (operation.getParameters() != null) {
-                operation.getParameters().removeIf(p -> p.getName().equals("pageable"));
+                // Fix 4: null-safe equals to avoid NPE when getName() returns null
+                operation.getParameters().removeIf(p -> "pageable".equals(p.getName()));
             }
             return operation;
         };

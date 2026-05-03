@@ -1,11 +1,7 @@
-CREATE TYPE user_role         AS ENUM ('TRAINER', 'CLIENT');
 CREATE TYPE gender_type       AS ENUM ('MALE', 'FEMALE', 'OTHER');
 CREATE TYPE client_status     AS ENUM ('ACTIVE', 'PAUSED', 'ARCHIVED');
 CREATE TYPE assignment_status AS ENUM ('ACTIVE', 'COMPLETED', 'CANCELLED');
 CREATE TYPE difficulty_level  AS ENUM ('BEGINNER', 'INTERMEDIATE', 'ADVANCED');
-CREATE TYPE exercise_category AS ENUM ('STRENGTH', 'CARDIO', 'MOBILITY', 'FLEXIBILITY', 'SPORT');
-CREATE TYPE equipment_type    AS ENUM ('BARBELL', 'DUMBBELL', 'CABLE', 'MACHINE', 'BODYWEIGHT', 'KETTLEBELL', 'BAND', 'OTHER');
-CREATE TYPE muscle_group      AS ENUM ('CHEST', 'BACK', 'SHOULDERS', 'BICEPS', 'TRICEPS', 'CORE', 'GLUTES', 'QUADS', 'HAMSTRINGS', 'CALVES', 'FULL_BODY');
 CREATE TYPE meal_type         AS ENUM ('BREAKFAST', 'LUNCH', 'DINNER', 'SNACK', 'PRE_WORKOUT', 'POST_WORKOUT');
 CREATE TYPE photo_angle       AS ENUM ('FRONT', 'BACK', 'SIDE_LEFT', 'SIDE_RIGHT');
 CREATE TYPE thread_status     AS ENUM ('OPEN', 'AWAITING_TRAINER', 'AWAITING_CLIENT', 'RESOLVED');
@@ -90,22 +86,6 @@ CREATE TABLE exercise_threads
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     resolved_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT pk_exercise_threads PRIMARY KEY (id)
-);
-
-CREATE TABLE exercises
-(
-    id           UUID                                   NOT NULL,
-    created_by   UUID                                   NOT NULL,
-    name         VARCHAR(255)                           NOT NULL,
-    description  TEXT,
-    video_url    TEXT,
-    category     EXERCISE_CATEGORY                      NOT NULL,
-    equipment    EQUIPMENT_TYPE,
-    muscle_group MUSCLE_GROUP,
-    is_public    BOOLEAN                                NOT NULL,
-    deleted_at   TIMESTAMP WITH TIME ZONE,
-    created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    CONSTRAINT pk_exercises PRIMARY KEY (id)
 );
 
 CREATE TABLE food_items
@@ -207,34 +187,6 @@ CREATE TABLE progress_photos
     CONSTRAINT pk_progress_photos PRIMARY KEY (id)
 );
 
-CREATE TABLE trainer_profiles
-(
-    id             UUID                                   NOT NULL,
-    user_id        UUID                                   NOT NULL,
-    bio            TEXT,
-    specialization VARCHAR(255),
-    timezone       VARCHAR(100),
-    created_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    CONSTRAINT pk_trainer_profiles PRIMARY KEY (id)
-);
-
-CREATE TABLE users
-(
-    id             UUID                                   NOT NULL,
-    first_name     VARCHAR(100)                           NOT NULL,
-    last_name      VARCHAR(100)                           NOT NULL,
-    email          VARCHAR(255)                           NOT NULL,
-    password_hash  VARCHAR(255)                           NOT NULL,
-    role           USER_ROLE,
-    phone          VARCHAR(30),
-    avatar_url     TEXT,
-    email_verified BOOLEAN                                NOT NULL,
-    deleted_at     TIMESTAMP WITH TIME ZONE,
-    created_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    CONSTRAINT pk_users PRIMARY KEY (id)
-);
-
 CREATE TABLE workout_assignments
 (
     id              UUID                                   NOT NULL,
@@ -299,12 +251,6 @@ CREATE TABLE workout_plans
 
 ALTER TABLE client_profiles
     ADD CONSTRAINT uc_client_profiles_user UNIQUE (user_id);
-
-ALTER TABLE trainer_profiles
-    ADD CONSTRAINT uc_trainer_profiles_user UNIQUE (user_id);
-
-ALTER TABLE users
-    ADD CONSTRAINT uc_users_email UNIQUE (email);
 
 ALTER TABLE body_measurements
     ADD CONSTRAINT FK_BODY_MEASUREMENTS_ON_CHECKIN FOREIGN KEY (checkin_id) REFERENCES progress_checkins (id);
@@ -374,9 +320,6 @@ ALTER TABLE progress_checkins
 
 ALTER TABLE progress_photos
     ADD CONSTRAINT FK_PROGRESS_PHOTOS_ON_CHECKIN FOREIGN KEY (checkin_id) REFERENCES progress_checkins (id);
-
-ALTER TABLE trainer_profiles
-    ADD CONSTRAINT FK_TRAINER_PROFILES_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
 
 ALTER TABLE workout_assignments
     ADD CONSTRAINT FK_WORKOUT_ASSIGNMENTS_ON_CLIENT FOREIGN KEY (client_id) REFERENCES client_profiles (id);

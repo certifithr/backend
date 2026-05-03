@@ -34,6 +34,12 @@ public class ExerciseThreadService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
+    public ExerciseThreadEntity getThreadById(UUID threadId) {
+        return exerciseThreadRepository.findById(threadId)
+                .orElseThrow(() -> new IllegalArgumentException("Exercise thread not found: " + threadId));
+    }
+
+    @Transactional(readOnly = true)
     public List<ExerciseThreadEntity> getThreadsByClient(UUID clientId) {
         log.debug("Getting exercise threads for client: {}", clientId);
         validateUserIsClient(clientId);

@@ -28,6 +28,12 @@ public class ProgressCheckinService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
+    public ProgressCheckinEntity getCheckinById(UUID checkinId) {
+        return progressCheckinRepository.findById(checkinId)
+                .orElseThrow(() -> new IllegalArgumentException("Progress checkin not found: " + checkinId));
+    }
+
+    @Transactional(readOnly = true)
     public List<ProgressCheckinEntity> getCheckinsByClient(UUID clientId) {
         log.debug("Getting progress checkins for client: {}", clientId);
         validateUserIsClient(clientId);

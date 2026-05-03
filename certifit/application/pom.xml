@@ -66,6 +66,12 @@
             <artifactId>spring-web</artifactId>
         </dependency>
 
+        <!-- AWS SDK S3 for Cloudflare R2 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+
         <!--
             SLF4J + Lombok are inherited from the root parent POM.
             No need to redeclare them here.

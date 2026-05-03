@@ -38,6 +38,7 @@
         <lombok.version>1.18.36</lombok.version>
         <springdoc.version>3.0.2</springdoc.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <awssdk.version>2.31.0</awssdk.version>
     </properties>
 
     <!-- ===== Dependency Management (shared across all modules) ===== -->
@@ -91,6 +92,15 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- AWS SDK v2 BOM -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.31.0</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
         </dependencies>

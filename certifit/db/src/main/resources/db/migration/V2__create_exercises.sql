@@ -1,19 +1,19 @@
+CREATE TYPE exercise_category AS ENUM ('STRENGTH', 'CARDIO', 'MOBILITY', 'FLEXIBILITY', 'SPORT');
+CREATE TYPE equipment_type    AS ENUM ('BARBELL', 'DUMBBELL', 'CABLE', 'MACHINE', 'BODYWEIGHT', 'KETTLEBELL', 'BAND', 'OTHER');
+CREATE TYPE muscle_group      AS ENUM ('CHEST', 'BACK', 'SHOULDERS', 'BICEPS', 'TRICEPS', 'CORE', 'GLUTES', 'QUADS', 'HAMSTRINGS', 'CALVES', 'FULL_BODY');
+
 CREATE TABLE exercises
 (
-    id                INTEGER NOT NULL,
-    name              VARCHAR(255),
-    slug              VARCHAR(255),
-    category          VARCHAR(255),
-    difficulty        VARCHAR(255),
-    force             VARCHAR(255),
-    mechanic          VARCHAR(255),
-    description       TEXT,
-    muscles_primary   JSONB,
-    muscles_secondary JSONB,
-    correct_steps     JSONB,
-    media             JSONB,
-    body_map_images   JSONB,
-    variation_of      JSONB,
-    variations        JSONB,
+    id           UUID                                   NOT NULL,
+    created_by   UUID                                   NOT NULL,
+    name         VARCHAR(255)                           NOT NULL,
+    description  TEXT,
+    video_url    TEXT,
+    category     EXERCISE_CATEGORY                      NOT NULL,
+    equipment    EQUIPMENT_TYPE,
+    muscle_group MUSCLE_GROUP,
+    is_public    BOOLEAN                                NOT NULL,
+    deleted_at   TIMESTAMP WITH TIME ZONE,
+    created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     CONSTRAINT pk_exercises PRIMARY KEY (id)
 );

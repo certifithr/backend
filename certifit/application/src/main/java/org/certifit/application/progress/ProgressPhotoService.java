@@ -2,6 +2,7 @@ package org.certifit.application.progress;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.certifit.application.files.StoredFileService;
 import org.certifit.db.entity.ProgressCheckinEntity;
 import org.certifit.db.entity.ProgressPhotoEntity;
 import org.certifit.db.entity.UserEntity;
@@ -25,6 +26,7 @@ public class ProgressPhotoService {
     private final ProgressPhotoRepository progressPhotoRepository;
     private final ProgressCheckinRepository progressCheckinRepository;
     private final UserRepository userRepository;
+    private final StoredFileService storedFileService;
 
     @Transactional(readOnly = true)
     public List<ProgressPhotoEntity> getPhotosByCheckin(UUID checkinId) {
@@ -33,7 +35,7 @@ public class ProgressPhotoService {
     }
 
     @Transactional
-    public ProgressPhotoEntity addPhoto(UUID checkinId, UUID clientId, PhotoAngle angle, String photoUrl) {
+    public ProgressPhotoEntity addPhoto(UUID checkinId, UUID clientId, PhotoAngle angle, UUID storedFileId) {
         log.info("Adding progress photo to checkin {} for client {}", checkinId, clientId);
         validateUserIsClient(clientId);
 
@@ -43,6 +45,8 @@ public class ProgressPhotoService {
         if (!checkin.getClient().getUser().getId().equals(clientId)) {
             throw new IllegalArgumentException("Checkin does not belong to client");
         }
+
+        String photoUrl = storedFileService.resolvePublicUrl(storedFileId);
 
         ProgressPhotoEntity photo = new ProgressPhotoEntity();
         photo.setCheckin(checkin);
